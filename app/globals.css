@@ -1,15 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne+Mono&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-mono: 'Courier New', Courier, monospace;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono: 'Syne Mono', 'Courier New', monospace;
 
-  --color-board-bg: #0a0a0a;
-  --color-board-row: #111111;
-  --color-board-row-alt: #161616;
-  --color-board-border: #222222;
-  --color-board-text: #f5f0e0;
-  --color-board-muted: #6b6b6b;
-  --color-board-header: #1a1a1a;
+  --color-board-bg: #03060F;
+  --color-board-row: #060C19;
+  --color-board-row-alt: #080F1E;
+  --color-board-border: #0E2035;
+  --color-board-text: #B8CDD9;
+  --color-board-muted: #334A5C;
+  --color-board-header: #040A15;
+  --color-board-accent: #00C2FF;
+  --color-board-gold: #E8C84A;
 
   --animate-flip-top: flipTop 0.25s ease-in forwards;
   --animate-flip-bottom: flipBottom 0.25s ease-out 0.25s forwards;
@@ -23,6 +27,58 @@ body {
   background-color: var(--color-board-bg);
   color: var(--color-board-text);
   font-family: var(--font-mono), monospace;
+}
+
+/* Scanlines CRT overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.07) 3px,
+    rgba(0, 0, 0, 0.07) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Row entrance animation */
+@keyframes rowEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.flight-row {
+  animation: rowEnter 0.35s ease-out both;
+}
+
+/* Live indicator pulse */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--color-board-accent); }
+  50% { opacity: 0.3; box-shadow: none; }
+}
+
+.live-dot {
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+/* Boarding status pulse */
+@keyframes boardingPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.boarding-pulse {
+  animation: boardingPulse 1.4s ease-in-out infinite;
 }
 
 /* Split-flap animation */
@@ -46,35 +102,23 @@ body {
 }
 
 @keyframes flipTop {
-  0% {
-    transform: rotateX(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: rotateX(-90deg);
-    opacity: 0;
-  }
+  0% { transform: rotateX(0deg); opacity: 1; }
+  100% { transform: rotateX(-90deg); opacity: 0; }
 }
 
 @keyframes flipBottom {
-  0% {
-    transform: rotateX(90deg);
-    opacity: 0;
-  }
-  100% {
-    transform: rotateX(0deg);
-    opacity: 1;
-  }
+  0% { transform: rotateX(90deg); opacity: 0; }
+  100% { transform: rotateX(0deg); opacity: 1; }
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #111;
+  background: var(--color-board-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
+  background: var(--color-board-border);
+  border-radius: 2px;
 }
