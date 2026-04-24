@@ -1,0 +1,60 @@
+FROM dhi.io/node:24-alpine3.23-dev AS deps
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+# Install project deps with frozen lockfile for reproducible builds
+RUN if [ -f package-lock.json ]; then \
+    npm ci --no-audit --no-fund; \
+  else \
+    echo "No lockfile found." && exit 1; \
+  fi
+
+FROM dhi.io/node:24-alpine3.23-dev AS dev
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+CMD ["sh", "-c", "npm run seed && npm run dev"]
+
+FROM dhi.io/node:24-alpine3.23-dev AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy project deps from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy application source code
+COPY . .
+
+ENV NODE_ENV=production
+
+RUN if [ -f package-lock.json ]; then \
+    npm run build; \
+  else \
+    echo "No lockfile found." && exit 1; \
+  fi
+
+FROM dhi.io/node:24-alpine3.23 AS runner
+
+# Set working directory
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+
+# Seed data for database reset functionality
+COPY ./data/flights.seed.json ./data/flights.seed.json
+
+USER node
+
+# Expose port 3000 to allow HTTP traffic
+EXPOSE 3000

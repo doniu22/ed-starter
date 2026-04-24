@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
 import { readFlights } from '@/lib/flights';
-import type { FlightStatus } from '@/types';
 import { ALL_STATUSES } from '@/types';
 
-export type FlightStats = Record<FlightStatus, number> & { total: number };
-
 export async function GET() {
-  const flights = readFlights();
+  const flights = await readFlights();
 
-  const counts = Object.fromEntries(ALL_STATUSES.map((s) => [s, 0])) as Record<FlightStatus, number>;
-  for (const flight of flights) {
-    counts[flight.status]++;
-  }
+  const stats = Object.fromEntries(
+    ALL_STATUSES.map((status) => [status, flights.filter((f) => f.status === status).length])
+  );
 
-  const stats: FlightStats = { ...counts, total: flights.length };
   return NextResponse.json(stats);
 }
