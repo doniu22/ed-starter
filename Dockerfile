@@ -58,3 +58,5 @@ USER node
 
 # Expose port 3000 to allow HTTP traffic
 EXPOSE 3000
+
+CMD ["node", "server.js"]
